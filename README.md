@@ -1,158 +1,160 @@
 # MQTT Testing Project
 
-This project demonstrates a simple MQTT (Message Queuing Telemetry Transport) implementation with a publisher and subscriber pattern. It's designed to help test and understand MQTT messaging concepts.
+A simple demonstration of MQTT (Message Queuing Telemetry Transport) protocol using Node.js with publisher-subscriber messaging pattern.
+
+## What is MQTT?
+
+MQTT is a lightweight messaging protocol for IoT devices and real-time applications. It uses a publish-subscribe model where:
+- **Publishers** send messages to topics
+- **Subscribers** receive messages from topics they're interested in
+- A **broker** routes messages between publishers and subscribers
 
 ## Project Structure
 
 ```
 mqtt-project/
 ├── README.md           # Project documentation
-├── package.json        # Project dependencies and metadata
-├── package-lock.json   # Locked versions of dependencies
-├── publisher.js        # MQTT publisher implementation
-└── subscriber.js       # MQTT subscriber implementation
+├── package.json        # Dependencies
+├── publisher.js        # Sends messages
+└── subscriber.js       # Receives messages
+```
+
+## Prerequisites
+
+### Node.js (Required)
+```bash
+# On macOS using Homebrew
+brew install node
+
+# Verify installation
+node --version
+npm --version
+```
+
+### MQTT Broker - Mosquitto (Required)
+```bash
+# On macOS using Homebrew
+brew install mosquitto
+
+# Start the broker
+brew services start mosquitto
+
+# Verify it's running
+brew services list | grep mosquitto
+```
+
+## Installation
+
+1. **Install project dependencies:**
+```bash
+npm install
+```
+
+2. **Verify MQTT broker is running:**
+```bash
+mosquitto_pub -h localhost -t test/topic -m "test"
+```
+
+## How to Run
+
+### Step 1: Start the Subscriber
+Open terminal and run:
+```bash
+node subscriber.js
+```
+**Expected output:**
+```
+Connected as a durable subscriber.
+Subscribed to "test/topic" with QoS 2
+```
+
+### Step 2: Start the Publisher
+Open another terminal and run:
+```bash
+node publisher.js
+```
+**Expected output:**
+```
+Publisher connected.
+Enter a message to publish:
+```
+
+### Step 3: Test Communication
+1. Type a message in the publisher terminal and press Enter
+2. See the message appear in the subscriber terminal
+3. Press `Ctrl+C` to stop either program
+
+**Example:**
+```
+# Publisher Terminal
+Enter a message to publish: Hello MQTT!
+Message "Hello MQTT!" published to "test/topic" with QoS 2
+
+# Subscriber Terminal
+Received message: Hello MQTT! on topic: test/topic
+```
+
+## Understanding the Code
+
+### Publisher (`publisher.js`)
+- Connects to MQTT broker on localhost:1883
+- Publishes messages to "test/topic"
+- Uses QoS 2 (reliable delivery)
+- Interactive command-line interface
+
+### Subscriber (`subscriber.js`)
+- Connects as durable subscriber (messages saved when offline)
+- Listens to "test/topic"
+- Uses QoS 2 (reliable delivery)
+- Displays received messages
+
+## Key MQTT Concepts
+
+### Topics
+- Message routing paths (like "test/topic")
+- Hierarchical structure separated by "/"
+
+### QoS Levels
+- **QoS 0**: Fire and forget (may lose messages)
+- **QoS 1**: At least once (may duplicate)
+- **QoS 2**: Exactly once (used in this project - most reliable)
+
+### Durable Subscriptions
+- Messages are saved when subscriber is offline
+- No message loss during disconnections
+
+## Troubleshooting
+
+### Connection Issues
+```bash
+# Check if Mosquitto is running
+brew services list | grep mosquitto
+
+# Start if not running
+brew services start mosquitto
+
+# Test broker
+mosquitto_pub -h localhost -t test/topic -m "test message"
+```
+
+### Messages Not Received
+- Start subscriber before publisher
+- Check topic names match exactly
+- Verify broker is running
+
+### Port Issues
+```bash
+# Check what's using port 1883
+lsof -i :1883
+
+# Kill process if needed
+kill -9 <PID>
 ```
 
 ## Dependencies
 
-The project uses the following main libraries:
-
-1. **mqtt (v5.8.0)**
-   - Core MQTT client library
-   - Used in publisher.js for sending messages
-   - Features: QoS levels, connection management, message publishing
-
-2. **async-mqtt (v2.6.3)**
-   - Promise-based wrapper for MQTT
-   - Used in subscriber.js for receiving messages
-   - Features: Async/await support, durable subscriptions
-
-## Components
-
-### 1. Publisher (publisher.js)
-- Connects to MQTT broker (default: localhost:1883)
-- Publishes messages to topic "test/topic"
-- Uses QoS level 2 (exactly-once delivery)
-- Interactive command-line interface for message input
-- Features:
-  - Graceful shutdown handling
-  - Error handling for connections
-  - Persistent connection management
-
-### 2. Subscriber (subscriber.js)
-- Connects to MQTT broker as a durable subscriber
-- Subscribes to topic "test/topic"
-- Uses QoS level 2 for reliable message delivery
-- Features:
-  - Durable subscriptions (messages retained if disconnected)
-  - Message reception and display
-  - Graceful shutdown handling
-
-## Prerequisites
-
-1. **Node.js and npm**
-   - Node.js v16.0.0 or higher
-   - npm (comes with Node.js)
-
-2. **MQTT Broker**
-   - Mosquitto (recommended)
-   - Running on localhost:1883 (default)
-
-## Installation
-
-1. **Install Node.js and npm**
-   ```bash
-   # On macOS using Homebrew
-   brew install node
-   ```
-
-2. **Install MQTT Broker (Mosquitto)**
-   ```bash
-   # On macOS using Homebrew
-   brew install mosquitto
-   brew services start mosquitto
-   ```
-
-3. **Install Project Dependencies**
-   ```bash
-   npm install
-   ```
-
-## Running the Project
-
-1. **Start the Subscriber**
-   ```bash
-   node subscriber.js
-   ```
-   - This will connect to the MQTT broker
-   - Wait for messages on topic "test/topic"
-
-2. **Start the Publisher**
-   ```bash
-   node publisher.js
-   ```
-   - This will connect to the MQTT broker
-   - Prompt you to enter messages
-   - Each message will be published to "test/topic"
-
-3. **Testing**
-   - Type messages in the publisher terminal
-   - See them appear in the subscriber terminal
-   - Press Ctrl+C in either terminal to stop
-
-## MQTT Concepts Used
-
-1. **Topics**
-   - Hierarchical structure (test/topic)
-   - Used for message routing
-
-2. **QoS Levels**
-   - QoS 2: Exactly-once delivery
-   - Ensures reliable message delivery
-
-3. **Durable Subscriptions**
-   - Messages retained when subscriber is offline
-   - Ensures no messages are lost
-
-4. **Connection Management**
-   - Automatic reconnection
-   - Graceful shutdown handling
-
-## Error Handling
-
-The project includes error handling for:
-- Connection failures
-- Message publishing errors
-- Subscription errors
-- Graceful shutdown
-
-## Security Notes
-
-- Default configuration uses localhost
-- No authentication in basic setup
-- For production use, consider:
-  - Adding authentication
-  - Using TLS/SSL
-  - Implementing proper access control
-
-## Troubleshooting
-
-1. **Connection Issues**
-   - Ensure Mosquitto is running
-   - Check broker address (default: localhost:1883)
-   - Verify network connectivity
-
-2. **Message Not Received**
-   - Check topic names match
-   - Verify QoS levels
-   - Ensure subscriber is running before publisher
-
-## Contributing
-
-Feel free to:
-- Report issues
-- Suggest improvements
-- Submit pull requests
+- **mqtt@^5.8.0**: Core MQTT client library
+- **async-mqtt@^2.6.3**: Promise-based MQTT wrapper
 
 ## License
 
